@@ -1,3 +1,4 @@
+import move_data
 import network
 import socket
 import pickle
@@ -16,20 +17,42 @@ class Server:
         self.known_points = []
         self.path = Pathfinding.find_path(self.width, self.height, start=(0,0), known_points=self.known_points)
         self.step_num = 0
-        self.ns = 1
-        self.ew = 0
+        self.direction = 0
 
     def step(self):
         
         current_frame = self.receive_frame()
         current_pos = self.path[self.step_num]
         closest = Depth.find_depth(current_frame).max()
-        if closest >= TEST_NUMBER: # WE NEED TO TEST NUMBER
-            objects = Images.evauluate_image(cv2.imwrite('current.png', current_frame))
+        if closest >= 9.95: # WE NEED TO TEST NUMBER
+            cv2.imwrite('current.png', current_frame)
+            objects = Images.evauluate_image('current.png')
+            print(objects)
+            if self.direction == 0:
+                self.known_points.append((current_pos[self.step_num+1], current_pos[self.step_num]))
+            elif self.direction == 90:
+                self.known_points.append((current_pos[self.step_num], current_pos[self.step_num+1]))
+            elif self.direction == 180:
+                self.known_points.append((current_pos[self.step_num-1], current_pos[self.step_num]))
+            elif self.direction == 270:
+                self.known_points.append((current_pos[self.step_num], current_pos[self.step_num-1]))
+        else:
             pass
-
         self.step_num +=1
         self.path = Pathfinding.find_path(self.width, self.height, start=(0,0), known_points=self.known_points)
+        if current_pos[0] == self.path[self.step_num+1][0]:
+            if current_pos[1] > self.path[self.step_num+1][1]:
+                self.direction = 270
+            elif current_pos[1] < self.path[self.step_num][1]:
+                self.direction = 90
+        if current_pos[1] == self.path[self.step_num+1][1]:
+            if current_pos[0] > self.path[self.step_num+1][0]:
+                self.direction = 180
+            elif current_pos[0] < self.path[self.step_num+1][1]:
+                self.direction = 0
+        self.step_num +=1
+        self.path = Pathfinding.find_path(self.width, self.height, start=(0,0), known_points=self.known_points)
+        move = (100, self.direction, '0.2')
              # Edit 2d map
         # VVV PUT MOVE LOGIC IN THIS VVV
         #move = self.process_movement()
