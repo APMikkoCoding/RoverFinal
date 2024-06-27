@@ -1,4 +1,0 @@
-PORT = 4762
-HEADER_LENGTH = 128
-HEADER_FORMAT = "utf-8"
-END = b"stop"
